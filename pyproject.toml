@@ -54,7 +54,7 @@ Repository = "https://github.com/your-username/birdrecorder.git"
 Issues = "https://github.com/your-username/birdrecorder/issues"
 
 [project.scripts]
-birdrecorder = "birdrecorder.birdrecorder:main"
+birdrecorder = "birdrecorder.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["birdrecorder"]
@@ -62,9 +62,9 @@ packages = ["birdrecorder"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = [
-    # "--cov=birdrecorder",
-    # "--cov-report=term-missing",
-    # "--cov-report=html",
+    "--cov=birdrecorder",
+    "--cov-report=term-missing",
+    "--cov-report=html",
     "--strict-markers",
     "--strict-config",
     "--disable-warnings",
