@@ -1,0 +1,93 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "birdrecorder"
+version = "1.0.0"
+description = "A small tool to detect motion or birds and record video streams of them"
+# readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Bird Recorder" },
+]
+keywords = [
+    "opencv",
+    "motion",
+    "birds",
+    "yolo",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications",
+    "Topic :: Utilities",
+    "Topic :: Text Processing",
+]
+requires-python = ">=3.10"
+dependencies = [
+   "opencv-python>=4.12",
+   "ultralytics>=8.3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+    "pytest>=9.0.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/your-username/birdrecorder"
+Repository = "https://github.com/your-username/birdrecorder.git"
+Issues = "https://github.com/your-username/birdrecorder/issues"
+
+[project.scripts]
+birdrecorder = "birdrecorder.birdrecorder:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["birdrecorder"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    # "--cov=birdrecorder",
+    # "--cov-report=term-missing",
+    # "--cov-report=html",
+    "--strict-markers",
+    "--strict-config",
+    "--disable-warnings",
+]
+testpaths = ["test"]
+
+[tool.coverage.run]
+source = ["birdrecorder"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
