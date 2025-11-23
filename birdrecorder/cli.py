@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import logging
 from birdrecorder.detectors import make_detector
-from birdrecorder.recorder import Hysteresis, Recorder
+from birdrecorder.recorder import Hysteresis, Recorder, CircularFrameStore
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("birdrecorder")
@@ -93,7 +93,7 @@ def main():
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     fps = cap.get(cv2.CAP_PROP_FPS)
     logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
-    recorder = Recorder(Path("."), width, height, fps)
+    recorder = Recorder(Path("."), width, height, fps, CircularFrameStore(150))
     recording_hysteresis = Hysteresis(recorder, start_delay=15, stop_delay=30)
 
     while True:
