@@ -85,38 +85,22 @@ class Recorder:
         self.recoring_buffer = recording_buffer
 
     def start(self):
-        print(f"Start recording {self.width}x{self.height}@{self.framerate}")
-        filename = "rec_" + datetime.now().strftime("_%y%m%d_%H:%M:%S") + ".avi"
+        logger.info(f"Start recording {self.width}x{self.height}@{self.framerate}")
+        filename = "rec_" + datetime.now().strftime("%y%m%d_%H:%M:%S") + ".avi"
         filename = self.path / filename
         self.writer = cv2.VideoWriter(
             filename, self.fourcc, self.framerate, (self.width, self.height)
         )
         if self.recoring_buffer:
             logger.info(f"Flushing buffer of size {self.recoring_buffer.size}")
-            while frame := self.recoring_buffer.read():
+            while (frame := self.recoring_buffer.read()) is not None:
                 self.append_frame(frame)
 
     def stop(self):
         if self.writer:
+            logger.info("Stop recording")
             self.writer.release()
         self.writer = None
-
-    def timestamp(self, frame):
-        """Add timestamp to frame
-
-        Args:
-            frame (Matlike): current frame
-        """
-        date_time = datetime.now().strftime("%H:%M:%S:%f")[:-3]  # HH:MM:SS:mmm
-        cv2.putText(
-            frame,
-            date_time,
-            (15, 15),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.4,
-            (100, 255, 100),
-            1,
-        )
 
     def append_frame(self, frame):
         if not self.writer:
@@ -124,6 +108,3 @@ class Recorder:
                 self.recoring_buffer.write(frame)
             return
         self.writer.write(frame)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.writer.release()

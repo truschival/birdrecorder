@@ -1,5 +1,5 @@
 import cv2
-from typing import List, Tuple, Set
+from typing import List, Tuple
 from abc import ABC, abstractmethod
 from random import uniform
 import logging

@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 import numpy as np
 import logging
+from datetime import datetime
 from birdrecorder.detectors import make_detector
 from birdrecorder.recorder import Hysteresis, Recorder, CircularFrameStore
 
@@ -85,6 +86,24 @@ def mask_frame(frame):
     return cv2.bitwise_and(frame, frame, mask=mask)
 
 
+def timestamp_frame(frame):
+    """Add timestamp to frame
+
+    Args:
+        frame (Matlike): current frame
+    """
+    date_time = datetime.now().strftime("%H:%M:%S:%f")[:-3]  # HH:MM:SS:mmm
+    cv2.putText(
+        frame,
+        date_time,
+        (15, 15),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.4,
+        (100, 255, 100),
+        1,
+    )
+
+
 def main():
     args = parse_args()
     detector = make_detector(args)
@@ -101,6 +120,7 @@ def main():
         if not ret:
             break
 
+        timestamp_frame(frame)
         masked_frame = mask_frame(frame)
 
         boxes = detector.detect(masked_frame)
@@ -108,7 +128,7 @@ def main():
         recording_hysteresis.step(len(boxes) > 0)
 
         # If recording, annotate the frame
-        if recording_hysteresis.state:
+        if recording_hysteresis.state and args.mark:
             for box in boxes:
                 box.draw_on_frame(frame)
 
