@@ -1,7 +1,7 @@
 import cv2
 import argparse
 from pathlib import Path
-
+import numpy as np
 from birdrecorder.detectors import make_detector
 from birdrecorder.recorder import Hysteresis, Recorder
 
@@ -59,9 +59,17 @@ def parse_args():
     return parser.parse_args()
 
 
+def mask_frame(frame):
+    height, width = frame.shape[:2]
+    mask = np.zeros(( height, width ), dtype="uint8")
+    cv2.rectangle(mask, 
+                  (int(height*0.1),int(width*0.1)), 
+                  (int(height*1.0),int(width*0.9)), 255, -1)
+    return cv2.bitwise_and(frame, frame, mask=mask)
+
+
 def main():
     args = parse_args()
-
     detector = make_detector(args)
     cap = open_webcam(args)
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -76,7 +84,9 @@ def main():
         if not ret:
             break
 
-        boxes = detector.detect(frame)
+        masked_frame = mask_frame(frame)
+
+        boxes = detector.detect(masked_frame)
         # Did we find somthing -> add to hysteresis
         recording_hysteresis.step(len(boxes) > 0)
 
