@@ -2,23 +2,27 @@ import cv2
 import argparse
 from pathlib import Path
 import numpy as np
+import logging
 from birdrecorder.detectors import make_detector
 from birdrecorder.recorder import Hysteresis, Recorder
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("birdrecorder")
 
-def open_webcam(args) -> cv2.VideoCapture:
-    cap = cv2.VideoCapture(args.device)
+
+def open_stream(args) -> cv2.VideoCapture:
+    cap = cv2.VideoCapture(args.source)
     if not cap.isOpened():
-        raise SystemError(f"Cannot open stream device {args.device}")
+        raise SystemError(f"Cannot open stream device {args.source}")
 
     ret, _ = cap.read()
     if not ret:
-        raise SystemError(f"Reading from camera raised {ret}")
+        raise SystemError(f"Error reading from source {ret}")
 
-    if cap.set(cv2.CAP_PROP_AUTO_WB, int(not args.disable_auto_white_balance)):
-        print(f"Auto white balance: {not args.disable_auto_white_balance}")
+    if cap.set(cv2.CAP_PROP_AUTO_WB, int(args.auto_white_balance)):
+        logger.info(f"Auto white balance: {args.auto_white_balance}")
     if cap.set(cv2.CAP_PROP_WB_TEMPERATURE, int(args.color_temp)):
-        print(f"Set color temperature to {args.color_temp}")
+        logger.info(f"Set color temperature to {args.color_temp}")
 
     return cap
 
@@ -39,16 +43,25 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--device", type=int, default=0, help="Camera device for capture"
+        "--source", type=str, default=0, help="Camera device or video file path"
     )
 
     parser.add_argument(
-        "--disable-auto-white-balance",
+        "--auto-white-balance",
+        type=bool,
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="camera auto white balance",
+    )
+
+    parser.add_argument(
+        "--mark",
         type=bool,
         default=False,
         action=argparse.BooleanOptionalAction,
-        help="disable auto white balance",
+        help="Mark detected objects on frame",
     )
+
     parser.add_argument(
         "--color-temp",
         type=int,
@@ -61,21 +74,25 @@ def parse_args():
 
 def mask_frame(frame):
     height, width = frame.shape[:2]
-    mask = np.zeros(( height, width ), dtype="uint8")
-    cv2.rectangle(mask, 
-                  (int(height*0.1),int(width*0.1)), 
-                  (int(height*1.0),int(width*0.9)), 255, -1)
+    mask = np.zeros((height, width), dtype="uint8")
+    cv2.rectangle(
+        mask,
+        (int(height * 0.1), int(width * 0.1)),
+        (int(height * 1.0), int(width * 0.9)),
+        255,
+        -1,
+    )
     return cv2.bitwise_and(frame, frame, mask=mask)
 
 
 def main():
     args = parse_args()
     detector = make_detector(args)
-    cap = open_webcam(args)
+    cap = open_stream(args)
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"Camera opened: {width}x{height} @ {fps}fps")
+    logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
     recorder = Recorder(Path("."), width, height, fps)
     recording_hysteresis = Hysteresis(recorder, start_delay=15, stop_delay=30)
 
