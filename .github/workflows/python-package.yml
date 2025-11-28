@@ -31,8 +31,8 @@ jobs:
         uv sync --dev --extra cpu
     - name: Lint with ruff
       run: |
-        ruff check
-        ruff format
+        uv run ruff check
+        uv run ruff format
     - name: Test with pytest
       run: |
-        pytest
+        uv run pytest
