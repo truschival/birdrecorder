@@ -56,7 +56,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--source", type=str, default=0, help="Camera device or video file path"
+        "--source", type=str, default='/dev/video0', help="Camera device or video file path"
     )
 
     parser.add_argument(

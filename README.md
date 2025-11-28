@@ -23,8 +23,13 @@ Ultralytics Yolo depends on pytorch which in turn is uses Nvidia CUDA in its def
 If you have a recent NVidia Card you can get away without any extras. For older NVidia Cards or CPU-Only installations choose one of the extras `cu118` (CUDA 11.x series) or `cpu` (CPU Only)
 
 1. Install ['uv'](https://docs.astral.sh/uv/).
-2. Install the required dependencies and cuda backends (for yolo). Here as an example for CUDA 11.x
-   `uv sync --dev --extra cu118`
+2. Install the required dependencies and cuda backends (for yolo). 
+
+Example for CUDA 11.x
+  
+   ```shell
+   uv sync --dev --extra cu118
+   ```
 
 ### additional information for CUDA / Pytorch
 
