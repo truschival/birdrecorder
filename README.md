@@ -8,7 +8,7 @@ A motion / yolo object detector that starts and stops recording based on acitity
 
 |   Option              |        Default      | Description                                       |
 |:--------------------- | :-----------------: | :------------------------------------------------ | 
-| `--detection`         | 'yolo'              | Detection of motion or objects ('yolo' | 'opencv) | 
+| `--detection`         | `yolo`              | Detection of motion or objects ('yolo', 'opencv)  | 
 | `--source`            | `/dev/video0`       | Stream source (movie or capture device)           |
 | `--auto-focus`        | false               | enable/disable auto focus of camera               |
 | `--auto-white-balance`| false               | disable auto-white balance of camera              |
