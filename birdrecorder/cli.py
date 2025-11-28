@@ -20,7 +20,6 @@ def open_stream(args) -> cv2.VideoCapture:
     if not ret:
         raise SystemError(f"Error reading from source {ret}")
 
-
     logger.info(f"Autofocus {cap.get(cv2.CAP_PROP_AUTOFOCUS)}")
     logger.info(f"Auto exposure {cap.get(cv2.CAP_PROP_AUTO_EXPOSURE)}")
     logger.info(f"Auto white balance {cap.get(cv2.CAP_PROP_AUTO_WB)}")
@@ -56,7 +55,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--source", type=str, default='/dev/video0', help="Camera device or video file path"
+        "--source",
+        type=str,
+        default="/dev/video0",
+        help="Camera device or video file path",
     )
 
     parser.add_argument(
@@ -96,7 +98,6 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         help="Mark detected objects on frame",
     )
-
 
     return parser.parse_args()
 
@@ -141,8 +142,12 @@ def main():
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
-    recorder = Recorder(Path("."), width, height, fps, CircularFrameStore(3*args.hysteresis))
-    recording_hysteresis = Hysteresis(recorder, start_delay=args.hysteresis, stop_delay=args.hysteresis)
+    recorder = Recorder(
+        Path("."), width, height, fps, CircularFrameStore(3 * args.hysteresis)
+    )
+    recording_hysteresis = Hysteresis(
+        recorder, start_delay=args.hysteresis, stop_delay=args.hysteresis
+    )
 
     while True:
         ret, frame = cap.read()
