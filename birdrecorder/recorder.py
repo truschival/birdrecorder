@@ -71,9 +71,9 @@ class Recorder:
     def __init__(
         self,
         basepath: Path,
-        width,
-        height,
-        framerate,
+        width: int,
+        height: int,
+        framerate: int,
         recording_buffer: CircularFrameStore = None,
     ):
         self.fourcc = cv2.VideoWriter_fourcc(*"XVID")

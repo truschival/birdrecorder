@@ -8,7 +8,7 @@ logger = logging.getLogger("birdrecorder.detectors")
 
 
 class ConvenienceBoundingBox:
-    def __init__(self, label: str, box: Tuple[int, int, int, int], color=(200, 200, 0)):
+    def __init__(self, label: str, box: Tuple[int, int, int, int], color=(250, 250, 0)):
         self.label = label
         self.color = color
         # Simple coordinates tuple (x1, y1, x2, y2)
@@ -18,15 +18,22 @@ class ConvenienceBoundingBox:
         self.y2 = box[3]
 
     def draw_on_frame(self, frame):
-        cv2.rectangle(frame, (self.x1, self.y1), (self.x2, self.y2), self.color, 2)
+        cv2.rectangle(
+            frame,
+            (self.x1, self.y1),
+            (self.x2, self.y2),
+            color=self.color,
+            thickness=1,
+            lineType=cv2.LINE_AA,
+        )
         cv2.putText(
             frame,
             self.label,
             (self.x1 + 12, self.y1 + 12),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            self.color,
-            1,
+            0.4,
+            color=self.color,
+            thickness=1,
         )
 
 
@@ -81,7 +88,7 @@ class YoloDetector(Detector):
 class CvDetector(Detector):
     """OpenCV Background removal motion detector"""
 
-    def __init__(self, min_area, color=(200, 255, 20)):
+    def __init__(self, min_area, color=(0, 255, 255)):
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
             detectShadows=True, varThreshold=19
         )

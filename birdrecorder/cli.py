@@ -26,6 +26,8 @@ def open_stream(args) -> cv2.VideoCapture:
     logger.info(f"White balance temperature {cap.get(cv2.CAP_PROP_WB_TEMPERATURE)}")
     logger.info(f"Brightness {cap.get(cv2.CAP_PROP_BRIGHTNESS)}")
     logger.info(f"Contrast {cap.get(cv2.CAP_PROP_CONTRAST)}")
+    logger.info(f"Hardware device acceleration {cap.get(cv2.CAP_PROP_HW_ACCELERATION)}")
+    logger.info(f"Hardware device {cap.get(cv2.CAP_PROP_HW_DEVICE)}")
 
     if cap.set(cv2.CAP_PROP_AUTOFOCUS, int(args.auto_focus)):
         logger.info(f"Setting auto focus: {args.auto_focus}")
@@ -33,7 +35,10 @@ def open_stream(args) -> cv2.VideoCapture:
         logger.info(f"Setting auto white balance: {args.auto_white_balance}")
     if cap.set(cv2.CAP_PROP_WB_TEMPERATURE, int(args.color_temp)):
         logger.info(f"Setting color temperature to {args.color_temp}")
-
+    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280):
+        logger.info("Setting frame width to 1280")
+    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720):
+        logger.info("Setting frame height to 720")
     return cap
 
 
@@ -137,9 +142,12 @@ def main():
     args = parse_args()
     detector = make_detector(args)
     cap = open_stream(args)
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    af = bool(cap.get(cv2.CAP_PROP_AUTOFOCUS))
+    mark = args.mark
 
     logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
     recorder = Recorder(
@@ -160,8 +168,8 @@ def main():
         # Did we find something -> add to hysteresis
         recording_hysteresis.step(len(boxes) > 0)
 
-        # If recording, annotate the frame
-        if recording_hysteresis.state and args.mark:
+        # show detected boxes
+        if mark:
             for box in boxes:
                 box.draw_on_frame(frame)
 
@@ -171,8 +179,17 @@ def main():
 
         # Show for debugging
         cv2.imshow("Motion", frame)
-        if cv2.waitKey(30) == 27:  # ESC to quit
+        key_event = cv2.waitKey(2) & 0xFF  # 2ms delay
+
+        if key_event == ord("q") or key_event == 27:  # q / ESC quit
             break
+        if key_event == ord("a"):  # s settings
+            af = not af
+            cap.set(cv2.CAP_PROP_AUTOFOCUS, int(af))
+            logger.info(f"Toggling auto focus to {af}")
+        if key_event == ord("m"):  # mark bounding boxes
+            mark = not mark
+            logger.info(f"Toggling marking detected objects to {mark}")
 
     cap.release()
     recorder.stop()
