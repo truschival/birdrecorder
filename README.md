@@ -17,6 +17,18 @@ A motion / yolo object detector that starts and stops recording based on acitity
 | `--min-area`          | 500                 | for opencv motion detector, minimum pixel area    |
 | `--mark`              | false               | Show bounding boxes in recording                  |
 
+
+## Run time control
+
+During runtime the program can be controlled by following keys.
+
+|   Key                 |       Description                                 |
+|:--------------------- | :------------------------------------------------ |
+| `ESC`, `q`            | Quit                                              |
+| `a`                   | Toggle auto-focus                                 |
+| `m`                   | Toggle bounding boxes                             |
+
+
 ## Install dependencies
 
 Ultralytics Yolo depends on pytorch which in turn is uses Nvidia CUDA in its default installation.
