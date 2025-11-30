@@ -26,6 +26,8 @@ def open_stream(args) -> cv2.VideoCapture:
     logger.info(f"White balance temperature {cap.get(cv2.CAP_PROP_WB_TEMPERATURE)}")
     logger.info(f"Brightness {cap.get(cv2.CAP_PROP_BRIGHTNESS)}")
     logger.info(f"Contrast {cap.get(cv2.CAP_PROP_CONTRAST)}")
+    logger.info(f"Hardware device acceleration {cap.get(cv2.CAP_PROP_HW_ACCELERATION)}")
+    logger.info(f"Hardware device {cap.get(cv2.CAP_PROP_HW_DEVICE)}")
 
     if cap.set(cv2.CAP_PROP_AUTOFOCUS, int(args.auto_focus)):
         logger.info(f"Setting auto focus: {args.auto_focus}")
@@ -33,7 +35,10 @@ def open_stream(args) -> cv2.VideoCapture:
         logger.info(f"Setting auto white balance: {args.auto_white_balance}")
     if cap.set(cv2.CAP_PROP_WB_TEMPERATURE, int(args.color_temp)):
         logger.info(f"Setting color temperature to {args.color_temp}")
-
+    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280):
+        logger.info("Setting frame width to 1280")
+    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720):
+        logger.info("Setting frame height to 720")
     return cap
 
 
