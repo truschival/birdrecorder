@@ -7,7 +7,9 @@ from datetime import datetime
 from birdrecorder.detectors import make_detector
 from birdrecorder.recorder import Hysteresis, Recorder, CircularFrameStore
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger("birdrecorder")
 
 
@@ -148,6 +150,7 @@ def timestamp_frame(frame):
 
 def main():
     args = parse_args()
+    logger.info(f"Starting birdrecorder with {args.source=}")
     detector = make_detector(args)
     cap = open_stream(args)
 
@@ -158,7 +161,7 @@ def main():
     mark = args.mark
     timing = args.timing
 
-    logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
+    logger.info(f"Camera opened: {width}x{height} @ {fps}fps \n---------------")
     recorder = Recorder(
         Path("."), width, height, fps, CircularFrameStore(3 * args.hysteresis)
     )

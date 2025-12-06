@@ -3,8 +3,25 @@ from typing import List, Tuple
 from abc import ABC, abstractmethod
 from random import uniform
 import logging
+from datetime import datetime
 
 logger = logging.getLogger("birdrecorder.detectors")
+
+
+def timeit(func):
+    """Decorator to time functions"""
+
+    def timed(*args, timing=False, **kwargs):
+        if timing is False:
+            return func(*args, **kwargs)
+        start_time = datetime.now()
+        result = func(*args, **kwargs)
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds() * 1000  # ms
+        logger.info(f"Timing: {func.__name__} took {duration:.2f} ms")
+        return result
+
+    return timed
 
 
 class ConvenienceBoundingBox:
@@ -67,6 +84,7 @@ class YoloDetector(Detector):
             missing = search.difference(set(YoloDetector().model.names.values()))
             raise ValueError(f"Cannot detect objects: {missing}")
 
+    @timeit
     def detect(self, frame) -> List[ConvenienceBoundingBox]:
         results = self.model.predict(
             frame, classes=list(self.interesting_things.keys())
@@ -88,13 +106,15 @@ class YoloDetector(Detector):
 class CvDetector(Detector):
     """OpenCV Background removal motion detector"""
 
-    def __init__(self, min_area, color=(0, 255, 255)):
+    def __init__(self, min_area, max_motion_area_prec=80, color=(0, 255, 255)):
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
             detectShadows=True, varThreshold=19
         )
         self.min_area = min_area
         self.color = color
+        self.max_motion_area_prec = max_motion_area_prec
 
+    @timeit
     def detect(self, frame) -> List[ConvenienceBoundingBox]:
         """
         Detect motion areas using OpenCV background subtraction.
@@ -103,10 +123,12 @@ class CvDetector(Detector):
             bg_subtractor: OpenCV background subtractor
             frame: Current video frame
             min_area: Minimum contour area to consider as motion (default: 500 pixels)
-
+            max_motion_area_prec: Maximum motion area as percentage of frame size (default: 80%)
+            color: Color for bounding boxes (default: yellow)
         Returns:
             List of ConvenienceBoundingBox objects representing motion areas
         """
+        frame_size = frame.shape[0] * frame.shape[1]
         fg_mask = self.bg_subtractor.apply(frame)
         # cv2.imshow("FG Mask_before", fg_mask)
         # Remove noise
@@ -124,7 +146,12 @@ class CvDetector(Detector):
         boxes = []
         for contour in contours:
             area = cv2.contourArea(contour)
-            if area > self.min_area:
+            # Check area thresholds
+            # The max area check helps to avoid false positives from large lighting changes
+            # and blur due to auto-focus
+            if area > self.min_area and area < frame_size * (
+                self.max_motion_area_prec / 100
+            ):
                 # Get bounding rectangle
                 x, y, w, h = cv2.boundingRect(contour)
                 cbb = ConvenienceBoundingBox("motion", (x, y, x + w, y + h), self.color)
@@ -135,10 +162,10 @@ class CvDetector(Detector):
 
 def make_detector(args) -> Detector:
     if args.detection == "yolo":
-        print("Using YOLO object detection")
+        logger.info("Using YOLO object detection")
         detector = YoloDetector({"person", "bird", "cat", "book"})
     else:
-        print("Using OpenCV motion detection")
+        logger.info("Using OpenCV motion detection")
         detector = CvDetector(min_area=args.min_area)
 
     return detector
