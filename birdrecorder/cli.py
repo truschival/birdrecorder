@@ -118,12 +118,17 @@ def parse_args():
 
 
 def mask_frame(frame):
+    """Mask frame to ignore 5% borders for detection.
+
+    Args:
+        frame (Matlike): current frame
+    """
     height, width = frame.shape[:2]
     mask = np.zeros((height, width), dtype="uint8")
     cv2.rectangle(
         mask,
-        (int(height * 0.1), int(width * 0.1)),
-        (int(height * 1.0), int(width * 0.9)),
+        (int(height * 0.05), int(width * 0.05)),
+        (int(height * 1.0), int(width * 0.95)),
         255,
         -1,
     )
@@ -166,7 +171,7 @@ def main():
         Path("."), width, height, fps, CircularFrameStore(3 * args.hysteresis)
     )
     recording_hysteresis = Hysteresis(
-        recorder, start_delay=args.hysteresis, stop_delay=args.hysteresis
+        recorder, start_delay=args.hysteresis, stop_delay=4 * args.hysteresis
     )
 
     while True:

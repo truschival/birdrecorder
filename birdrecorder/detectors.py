@@ -107,6 +107,13 @@ class CvDetector(Detector):
     """OpenCV Background removal motion detector"""
 
     def __init__(self, min_area, max_motion_area_prec=80, color=(0, 255, 255)):
+        """OpenCV motion detector using background subtraction.
+
+        Args:
+            min_area: Minimum contour area to consider as motion (default: 500 pixels)
+            max_motion_area_prec: Maximum motion area as percentage of frame size (default: 80%)
+            color(tuple, optional): Color for bounding boxes (default: yellow)
+        """
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
             detectShadows=True, varThreshold=19
         )
@@ -120,11 +127,8 @@ class CvDetector(Detector):
         Detect motion areas using OpenCV background subtraction.
 
         Args:
-            bg_subtractor: OpenCV background subtractor
             frame: Current video frame
-            min_area: Minimum contour area to consider as motion (default: 500 pixels)
-            max_motion_area_prec: Maximum motion area as percentage of frame size (default: 80%)
-            color: Color for bounding boxes (default: yellow)
+
         Returns:
             List of ConvenienceBoundingBox objects representing motion areas
         """
@@ -161,6 +165,14 @@ class CvDetector(Detector):
 
 
 def make_detector(args) -> Detector:
+    """_summary_
+
+    Args:
+        args (dict): arguments from CLI
+
+    Returns:
+        Detector: a Detector instance
+    """
     if args.detection == "yolo":
         logger.info("Using YOLO object detection")
         detector = YoloDetector({"person", "bird", "cat", "book"})

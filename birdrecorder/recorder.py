@@ -8,6 +8,7 @@ logger = logging.getLogger("birdrecorder.recorder")
 
 class Hysteresis:
     def __init__(self, controlled_instance, start_delay=5, stop_delay=5):
+        logger.info(f"Start after {start_delay}, stop after {stop_delay} ")
         self.START_AFTER_CNT = max(0, start_delay - 1)
         self.STOP_AFTER_CNT = max(0, stop_delay - 1)
         self.start_cnt = 0
@@ -22,19 +23,22 @@ class Hysteresis:
                     self.state = True
                     self.controlled_instance.start()
                 self.start_cnt = self.start_cnt + 1
-                self.stop_cnt = 0
+                logger.debug("..." * self.start_cnt)
+                self.stop_cnt = self.STOP_AFTER_CNT
             else:  # restart the start counter if we get a negative
                 self.start_cnt = 0
 
         else:  # Active -> wait to stop
             if not condition:
-                if self.stop_cnt == self.STOP_AFTER_CNT:
+                if self.stop_cnt == 0:
                     self.state = False
                     self.controlled_instance.stop()
-                self.stop_cnt = self.stop_cnt + 1
+                self.stop_cnt = self.stop_cnt - 1
+                logger.debug(f" {self.stop_cnt} " + "." * self.stop_cnt)
                 self.start_cnt = 0
             else:  # reset the stop counter
-                self.stop_cnt = 0
+                self.stop_cnt = self.STOP_AFTER_CNT
+                logger.debug("Reset stop_cnt")
         return self.state
 
 
