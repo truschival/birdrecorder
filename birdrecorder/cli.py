@@ -37,10 +37,10 @@ def open_stream(args) -> cv2.VideoCapture:
         logger.info(f"Setting auto white balance: {args.auto_white_balance}")
     if cap.set(cv2.CAP_PROP_WB_TEMPERATURE, int(args.color_temp)):
         logger.info(f"Setting color temperature to {args.color_temp}")
-    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280):
-        logger.info("Setting frame width to 1280")
-    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720):
-        logger.info("Setting frame height to 720")
+    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 800):
+        logger.info("Setting frame width to 800")
+    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 600):
+        logger.info("Setting frame height to 600")
     return cap
 
 
@@ -208,8 +208,8 @@ def main():
             mark = not mark
             logger.info(f"Toggling marking detected objects to {mark}")
         if key_event == ord("t"):  # timing information
-            mark = not mark
-            logger.info(f"Toggling marking detected objects to {mark}")
+            timing = not timing
+            logger.info(f"Toggling timing detected objects to {timing}")
 
     cap.release()
     recorder.stop()
