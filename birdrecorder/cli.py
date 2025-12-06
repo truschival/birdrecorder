@@ -7,7 +7,9 @@ from datetime import datetime
 from birdrecorder.detectors import make_detector
 from birdrecorder.recorder import Hysteresis, Recorder, CircularFrameStore
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger("birdrecorder")
 
 
@@ -35,10 +37,10 @@ def open_stream(args) -> cv2.VideoCapture:
         logger.info(f"Setting auto white balance: {args.auto_white_balance}")
     if cap.set(cv2.CAP_PROP_WB_TEMPERATURE, int(args.color_temp)):
         logger.info(f"Setting color temperature to {args.color_temp}")
-    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280):
-        logger.info("Setting frame width to 1280")
-    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720):
-        logger.info("Setting frame height to 720")
+    if cap.set(cv2.CAP_PROP_FRAME_WIDTH, 800):
+        logger.info("Setting frame width to 800")
+    if cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 600):
+        logger.info("Setting frame height to 600")
     return cap
 
 
@@ -49,7 +51,7 @@ def parse_args():
         "--detection",
         choices=["yolo", "opencv"],
         default="yolo",
-        help="Detection method: yolo for object detection, opencv for motion detection (default: yolo)",
+        help="Detection method: 'yolo' for object detection, 'opencv' for motion detection (default: yolo)",
     )
 
     parser.add_argument(
@@ -104,16 +106,29 @@ def parse_args():
         help="Mark detected objects on frame",
     )
 
+    parser.add_argument(
+        "--timing",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="Time the processing steps and show timing info",
+    )
+
     return parser.parse_args()
 
 
 def mask_frame(frame):
+    """Mask frame to ignore 5% borders for detection.
+
+    Args:
+        frame (Matlike): current frame
+    """
     height, width = frame.shape[:2]
     mask = np.zeros((height, width), dtype="uint8")
     cv2.rectangle(
         mask,
-        (int(height * 0.1), int(width * 0.1)),
-        (int(height * 1.0), int(width * 0.9)),
+        (int(height * 0.05), int(width * 0.05)),
+        (int(height * 1.0), int(width * 0.95)),
         255,
         -1,
     )
@@ -140,6 +155,7 @@ def timestamp_frame(frame):
 
 def main():
     args = parse_args()
+    logger.info(f"Starting birdrecorder with {args.source=}")
     detector = make_detector(args)
     cap = open_stream(args)
 
@@ -148,13 +164,14 @@ def main():
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     af = bool(cap.get(cv2.CAP_PROP_AUTOFOCUS))
     mark = args.mark
+    timing = args.timing
 
-    logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
+    logger.info(f"Camera opened: {width}x{height} @ {fps}fps \n---------------")
     recorder = Recorder(
         Path("."), width, height, fps, CircularFrameStore(3 * args.hysteresis)
     )
     recording_hysteresis = Hysteresis(
-        recorder, start_delay=args.hysteresis, stop_delay=args.hysteresis
+        recorder, start_delay=args.hysteresis, stop_delay=4 * args.hysteresis
     )
 
     while True:
@@ -164,7 +181,7 @@ def main():
 
         masked_frame = mask_frame(frame)
 
-        boxes = detector.detect(masked_frame)
+        boxes = detector.detect(masked_frame, timing=timing)
         # Did we find something -> add to hysteresis
         recording_hysteresis.step(len(boxes) > 0)
 
@@ -190,6 +207,9 @@ def main():
         if key_event == ord("m"):  # mark bounding boxes
             mark = not mark
             logger.info(f"Toggling marking detected objects to {mark}")
+        if key_event == ord("t"):  # timing information
+            timing = not timing
+            logger.info(f"Toggling timing detected objects to {timing}")
 
     cap.release()
     recorder.stop()
