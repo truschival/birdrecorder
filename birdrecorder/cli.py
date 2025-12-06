@@ -49,7 +49,7 @@ def parse_args():
         "--detection",
         choices=["yolo", "opencv"],
         default="yolo",
-        help="Detection method: yolo for object detection, opencv for motion detection (default: yolo)",
+        help="Detection method: 'yolo' for object detection, 'opencv' for motion detection (default: yolo)",
     )
 
     parser.add_argument(
@@ -104,6 +104,14 @@ def parse_args():
         help="Mark detected objects on frame",
     )
 
+    parser.add_argument(
+        "--timing",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="Time the processing steps and show timing info",
+    )
+
     return parser.parse_args()
 
 
@@ -148,6 +156,7 @@ def main():
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     af = bool(cap.get(cv2.CAP_PROP_AUTOFOCUS))
     mark = args.mark
+    timing = args.timing
 
     logger.info(f"Camera opened: {width}x{height} @ {fps}fps")
     recorder = Recorder(
@@ -164,7 +173,7 @@ def main():
 
         masked_frame = mask_frame(frame)
 
-        boxes = detector.detect(masked_frame)
+        boxes = detector.detect(masked_frame, timing=timing)
         # Did we find something -> add to hysteresis
         recording_hysteresis.step(len(boxes) > 0)
 
@@ -188,6 +197,9 @@ def main():
             cap.set(cv2.CAP_PROP_AUTOFOCUS, int(af))
             logger.info(f"Toggling auto focus to {af}")
         if key_event == ord("m"):  # mark bounding boxes
+            mark = not mark
+            logger.info(f"Toggling marking detected objects to {mark}")
+        if key_event == ord("t"):  # timing information
             mark = not mark
             logger.info(f"Toggling marking detected objects to {mark}")
 
