@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "birdrecorder"
 version = "1.1.0"
 description = "A small tool to detect motion or birds and record video streams of them"
-# readme = "README.md"
+readme = "README.md"
 license = { text = "MIT" }
 authors = [
     { name = "Bird Recorder" },
