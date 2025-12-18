@@ -107,6 +107,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--flip",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="Flip the frame horizontally",
+    )
+
+    parser.add_argument(
         "--timing",
         type=bool,
         default=False,
@@ -135,17 +143,20 @@ def mask_frame(frame):
     return cv2.bitwise_and(frame, frame, mask=mask)
 
 
-def timestamp_frame(frame):
+def timestamp_frame(frame, counter=0):
     """Add timestamp to frame
 
     Args:
         frame (Matlike): current frame
     """
     date_time = datetime.now().strftime("%H:%M:%S:%f")[:-3]  # HH:MM:SS:mmm
+    if counter > 0:
+        date_time = f"{date_time} [{counter}]"
+
     cv2.putText(
         frame,
         date_time,
-        (15, 15),
+        (150, 15),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.4,
         (100, 255, 100),
@@ -163,10 +174,13 @@ def main():
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     af = bool(cap.get(cv2.CAP_PROP_AUTOFOCUS))
+    frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     mark = args.mark
     timing = args.timing
 
-    logger.info(f"Camera opened: {width}x{height} @ {fps}fps \n---------------")
+    logger.info(
+        f"Camera opened: {width}x{height} @ {fps}fps total {frame_count} \n---------------"
+    )
     recorder = Recorder(
         Path("."), width, height, fps, CircularFrameStore(3 * args.hysteresis)
     )
@@ -178,6 +192,9 @@ def main():
         ret, frame = cap.read()
         if not ret:
             break
+
+        if args.flip:
+            frame = cv2.flip(frame, 0)
 
         masked_frame = mask_frame(frame)
 
@@ -191,7 +208,7 @@ def main():
                 box.draw_on_frame(frame)
 
         # The recorder will discard if inactive
-        timestamp_frame(frame)
+        timestamp_frame(frame, recording_hysteresis.start_cnt)
         recorder.append_frame(frame)
 
         # Show for debugging

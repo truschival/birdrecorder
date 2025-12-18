@@ -8,11 +8,12 @@ A motion / yolo object detector that starts and stops recording based on acitity
 
 |   Option              |        Default      | Description                                       |
 |:--------------------- | :-----------------: | :------------------------------------------------ |
-| `--detection`         | `yolo`              | Detection of motion or objects ('yolo', 'opencv)  |
+| `--detection`         | `yolo`              | Detection of motion or objects ('yolo', 'opencv') |
 | `--source`            | `/dev/video0`       | Stream source (movie or capture device)           |
 | `--auto-focus`        | false               | enable/disable auto focus of camera               |
 | `--auto-white-balance`| false               | disable auto-white balance of camera              |
-| `--color-temp`        | 5500                | Color temperatuer if auto-white-balance disabled  |
+| `--flip`              | false               | Flip the frame vertically                         |
+| `--color-temp`        | 5500                | Color temperature if auto-white-balance disabled  |
 | `--hysteresis`        | 15                  | Number of frames required to trigger recording    |
 | `--min-area`          | 500                 | for opencv motion detector, minimum pixel area    |
 | `--mark`              | false               | Show bounding boxes in recording                  |
